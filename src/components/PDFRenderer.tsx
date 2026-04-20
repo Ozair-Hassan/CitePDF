@@ -77,7 +77,11 @@ export const PDFRenderer = forwardRef<PDFRendererHandle, PDFRendererProps>(
           const page = await doc.getPage(pageNum)
           const viewport = page.getViewport({ scale })
           const canvas = canvasRefs.current.get(pageNum)
-          if (!canvas) return
+          if (!canvas) {
+            isRenderingRef.current.delete(pageNum)
+            requestAnimationFrame(() => renderPage(pageNum))
+            return
+          }
 
           canvas.width = viewport.width
           canvas.height = viewport.height
