@@ -12,11 +12,12 @@ export default defineConfig({
       formats: ['es', 'cjs'],
     },
     rollupOptions: {
-      external: ['react', 'react-dom'],
+      external: ['react', 'react-dom', 'pdfjs-dist'],
       output: {
         globals: {
           react: 'React',
           'react-dom': 'ReactDOM',
+          'pdfjs-dist': 'pdfjsLib',
         },
       },
     },
