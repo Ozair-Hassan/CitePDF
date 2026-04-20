@@ -2,6 +2,8 @@
 
 Reading PDFs in a browser is fine. Linking your UI to specific passages in them is not. CitePDF makes that part easy.
 
+![npm version](https://img.shields.io/npm/v/citepdf) ![npm downloads](https://img.shields.io/npm/dw/citepdf) ![bundle size](https://img.shields.io/bundlephobia/minzip/citepdf)
+
 ![React](https://img.shields.io/badge/React-18%2B-blue) ![TypeScript](https://img.shields.io/badge/TypeScript-ready-blue) ![License](https://img.shields.io/badge/license-MIT-green)
 
 **[Live demo →](https://cite-pdf-demo.vercel.app/)**
