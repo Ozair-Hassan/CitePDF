@@ -1,6 +1,6 @@
 {
   "name": "citepdf",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A PDF viewer library designed for citations",
   "author": "Ozair Hassan",
   "license": "MIT",
