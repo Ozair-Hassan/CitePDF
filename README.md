@@ -4,7 +4,7 @@ Reading PDFs in a browser is fine. Linking your UI to specific passages in them 
 
 ![React](https://img.shields.io/badge/React-18%2B-blue) ![TypeScript](https://img.shields.io/badge/TypeScript-ready-blue) ![License](https://img.shields.io/badge/license-MIT-green)
 
-**[Live demo →](https://citepdf.dev)**
+**[Live demo →](https://cite-pdf-demo.vercel.app/)**
 
 ---
 
