@@ -83,10 +83,17 @@ export const PDFRenderer = forwardRef<PDFRendererHandle, PDFRendererProps>(
             return
           }
 
+          const ctx = canvas.getContext('2d')
+          if (!ctx) {
+            isRenderingRef.current.delete(pageNum)
+            requestAnimationFrame(() => renderPage(pageNum))
+            return
+          }
+
           canvas.width = viewport.width
           canvas.height = viewport.height
 
-          await page.render({ canvas, viewport }).promise
+          await page.render({ canvas, canvasContext: ctx, viewport }).promise
 
           pageProxies.current.set(pageNum, page)
 
