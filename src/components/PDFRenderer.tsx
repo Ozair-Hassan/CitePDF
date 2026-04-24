@@ -12,6 +12,7 @@ import '../utils/pdfWorker'
 import { useTheme } from '../utils/theme'
 import type { PDFRendererProps } from '../types'
 import { HighlightOverlay } from './HighlightOverlay'
+import { initPdfWorker } from '../utils/pdfWorker'
 
 export interface PDFRendererHandle {
   scrollToPage: (page: number) => void
@@ -55,6 +56,10 @@ export const PDFRenderer = forwardRef<PDFRendererHandle, PDFRendererProps>(
     const [pageDimensions, setPageDimensions] = useState<
       Map<number, { width: number; height: number }>
     >(new Map())
+
+    useEffect(() => {
+      initPdfWorker()
+    }, [])
 
     useImperativeHandle(ref, () => ({
       scrollToPage: (page: number) => {
