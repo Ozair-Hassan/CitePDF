@@ -11,12 +11,19 @@ Reading PDFs in a browser is fine. Linking your UI to specific passages in them 
 ## Install
 
 ```bash
-npm install citepdf
-# or
-yarn add citepdf
+npm install citepdf pdfjs-dist
 ```
 
-Needs `react` and `react-dom` 18 or above as peer deps.
+CitePDF requires these peer dependencies — you must install them yourself:
+
+| Peer dependency | Required version |
+| --------------- | ---------------- |
+| `react`         | >=18.0.0         |
+| `react-dom`     | >=18.0.0         |
+| `pdfjs-dist`    | >=4.0.0          |
+
+> **Note:** `pdfjs-dist` is not auto-installed with citepdf. If you skip it you will get a
+> `citepdf could not be resolved` error when Vite starts.
 
 ---
 
@@ -74,7 +81,7 @@ import { CitationViewer } from 'citepdf'
   classNames={{
     container: 'my-viewer',
     sidebar: 'my-sidebar',
-    nav: 'my-nav',
+    navBar: 'my-nav',
   }}
   styles={{
     pdfArea: { backgroundColor: '#1e1e2e' },
@@ -176,8 +183,7 @@ export function ComposedExample({ theme = 'dark' }: { theme?: Theme }) {
           activeCitationId={activeId}
           highlightColor="rgba(234,179,8,0.35)"
           onDocumentLoaded={(n) => setTotal(n)}
-          onPageChange={setPage}
-          onCitationClick={setActiveId}
+          onVisiblePageChange={setPage}
         />
 
         <CitationSidebar
@@ -201,22 +207,21 @@ export function ComposedExample({ theme = 'dark' }: { theme?: Theme }) {
 
 ### Core
 
-| Prop           | Type                | Default      | Description                                         |
-| -------------- | ------------------- | ------------ | --------------------------------------------------- |
-| `file`         | `string`            | **required** | URL or blob URL of the PDF.                         |
-| `citations`    | `Citation[]`        | `[]`         | The citations to highlight and list in the sidebar. |
-| `initialPage`  | `number`            | `1`          | Which page to open on.                              |
-| `initialScale` | `number`            | `1.2`        | Starting zoom level. 1.0 = 100%.                    |
-| `theme`        | `'light' \| 'dark'` | `'light'`    | Light or dark chrome.                               |
+| Prop          | Type                   | Default      | Description                                         |
+| ------------- | ---------------------- | ------------ | --------------------------------------------------- |
+| `file`        | `string \| Uint8Array` | **required** | URL, blob URL, or raw bytes of the PDF.             |
+| `citations`   | `Citation[]`           | `[]`         | The citations to highlight and list in the sidebar. |
+| `initialPage` | `number`               | `1`          | Which page to open on.                              |
+| `theme`       | `'light' \| 'dark'`    | `'light'`    | Light or dark chrome.                               |
 
 ### Appearance
 
-| Prop                   | Type             | Default                 | Description                                                          |
-| ---------------------- | ---------------- | ----------------------- | -------------------------------------------------------------------- |
-| `highlightColor`       | `string`         | `rgba(250,204,21,0.4)`  | Color for inactive highlights.                                       |
-| `activeHighlightColor` | `string`         | `rgba(59,130,246,0.28)` | Color for the selected citation.                                     |
-| `classNames`           | `ClassNames`     | `{}`                    | Add your own classes to `container`, `pdfArea`, `sidebar`, or `nav`. |
-| `styles`               | `StyleOverrides` | `{}`                    | Inline style overrides for the same four elements.                   |
+| Prop                   | Type             | Default                 | Description                                                             |
+| ---------------------- | ---------------- | ----------------------- | ----------------------------------------------------------------------- |
+| `highlightColor`       | `string`         | `rgba(250,204,21,0.4)`  | Color for inactive highlights.                                          |
+| `activeHighlightColor` | `string`         | `rgba(59,130,246,0.28)` | Color for the selected citation.                                        |
+| `classNames`           | `ClassNames`     | `{}`                    | Add your own classes to `container`, `pdfArea`, `sidebar`, or `navBar`. |
+| `styles`               | `StyleOverrides` | `{}`                    | Inline style overrides for the same four elements.                      |
 
 ### Layout
 
@@ -227,12 +232,10 @@ export function ComposedExample({ theme = 'dark' }: { theme?: Theme }) {
 
 ### Callbacks
 
-| Prop                 | Type                           | Description                                            |
-| -------------------- | ------------------------------ | ------------------------------------------------------ |
-| `onCitationClick`    | `(id: number) => void`         | A citation was clicked, in the sidebar or on the page. |
-| `onPageChange`       | `(page: number) => void`       | The visible page changed.                              |
-| `onDocumentLoaded`   | `(totalPages: number) => void` | The PDF finished loading.                              |
-| `onCitationNotFound` | `(id: number) => void`         | A citation's text couldn't be found in the document.   |
+| Prop              | Type                     | Description                                           |
+| ----------------- | ------------------------ | ----------------------------------------------------- |
+| `onCitationClick` | `(id: number) => void`   | A citation was clicked in the sidebar or on the page. |
+| `onPageChange`    | `(page: number) => void` | The visible page changed.                             |
 
 ---
 
@@ -241,13 +244,13 @@ export function ComposedExample({ theme = 'dark' }: { theme?: Theme }) {
 ```ts
 interface Citation {
   id: number
-  label: string
+  label?: string
   text: string
   page?: number
 }
 ```
 
-CitePDF searches the PDF's text layer for `text` and figures out where to draw the highlight automatically. If it can't find a match — scanned document, image-only page — `onCitationNotFound` fires and the sidebar shows a warning on that entry.
+CitePDF searches the PDF's text layer for `text` and figures out where to draw the highlight automatically.
 
 ---
 
@@ -262,7 +265,6 @@ interface CitationViewerHandle {
   clearActiveCitation(): void
   getActiveCitationId(): number | undefined
   getTotalPages(): number
-  search(query: string): SearchResult[]
 }
 ```
 
@@ -275,9 +277,6 @@ ref.current?.clearActiveCitation()
 
 const total = ref.current?.getTotalPages()
 const active = ref.current?.getActiveCitationId()
-
-const results = ref.current?.search('sample size')
-// [{ page: 4, text: 'sample size', x, y, width, height }, ...]
 ```
 
 ---
@@ -286,16 +285,16 @@ const results = ref.current?.search('sample size')
 
 ### PDFRenderer
 
-| Prop               | Type                     | Default      | Description                                  |
-| ------------------ | ------------------------ | ------------ | -------------------------------------------- |
-| `file`             | `string`                 | **required** | PDF URL.                                     |
-| `scale`            | `number`                 | `1.2`        | Zoom level.                                  |
-| `citations`        | `Citation[]`             | `[]`         | Citations to overlay.                        |
-| `activeCitationId` | `number`                 | —            | Which citation is currently highlighted.     |
-| `highlightColor`   | `string`                 | —            | Inactive highlight color.                    |
-| `onDocumentLoaded` | `(n: number) => void`    | —            | Fires with the total page count once loaded. |
-| `onPageChange`     | `(page: number) => void` | —            | Fires when the user scrolls to a new page.   |
-| `onCitationClick`  | `(id: number) => void`   | —            | Fires when a highlight is clicked.           |
+| Prop                   | Type                     | Default      | Description                                  |
+| ---------------------- | ------------------------ | ------------ | -------------------------------------------- |
+| `file`                 | `string \| Uint8Array`   | **required** | PDF URL or raw bytes.                        |
+| `scale`                | `number`                 | `1.2`        | Zoom level.                                  |
+| `citations`            | `Citation[]`             | `[]`         | Citations to overlay.                        |
+| `activeCitationId`     | `number`                 | —            | Which citation is currently highlighted.     |
+| `highlightColor`       | `string`                 | —            | Inactive highlight color.                    |
+| `activeHighlightColor` | `string`                 | —            | Active highlight color.                      |
+| `onDocumentLoaded`     | `(n: number) => void`    | —            | Fires with the total page count once loaded. |
+| `onVisiblePageChange`  | `(page: number) => void` | —            | Fires when the user scrolls to a new page.   |
 
 ### CitationSidebar
 
@@ -337,6 +336,57 @@ interface Highlight {
 ```
 
 Most people won't need this. If you have the text, just use `Citation.text` and let CitePDF handle the rest.
+
+---
+
+## Troubleshooting
+
+**`citepdf could not be resolved` on `npm run dev`**
+
+You are missing the `pdfjs-dist` peer dependency. It is not auto-installed with citepdf — you must add it yourself:
+
+```bash
+npm install pdfjs-dist
+```
+
+---
+
+**`Cannot read properties of undefined (reading 'recentlyCreatedOwnerStacks')`**
+
+You have a React version mismatch. CitePDF supports React 18 and 19. Make sure your project is not mixing versions — check that `react` and `react-dom` are the same version in your `node_modules`.
+
+---
+
+**`Cannot set properties of undefined (setting 'workerSrc')`**
+
+Your installed version of `pdfjs-dist` is too old. CitePDF requires v4 or above:
+
+```bash
+npm install pdfjs-dist@latest
+```
+
+---
+
+**PDF fails to load with a CORS error**
+
+This is not a CitePDF issue — the server hosting the PDF is blocking cross-origin requests. Either serve the PDF from your own domain, use a proxy, or ensure the host server sends `Access-Control-Allow-Origin` headers. PDFs served from your own Vite `public/` folder will always work:
+
+```tsx
+<CitationViewer
+  file="/my-paper.pdf"
+  citations={citations}
+/>
+```
+
+---
+
+**TypeScript error: property `X` does not exist on `CitationViewerProps`**
+
+Make sure you are on the latest version of citepdf — earlier versions had incomplete type exports:
+
+```bash
+npm install citepdf@latest
+```
 
 ---
 
