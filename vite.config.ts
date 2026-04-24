@@ -9,7 +9,7 @@ export default defineConfig({
       entry: 'src/index.ts',
       name: 'CitePDF',
       fileName: 'index',
-      formats: ['es', 'cjs'],
+      formats: ['es'],
     },
     rollupOptions: {
       external: ['react', 'react-dom', 'react/jsx-runtime', 'pdfjs-dist'],
@@ -17,6 +17,7 @@ export default defineConfig({
         globals: {
           react: 'React',
           'react-dom': 'ReactDOM',
+          'react/jsx-runtime': 'ReactJsxRuntime',
           'pdfjs-dist': 'pdfjsLib',
         },
       },
