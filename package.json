@@ -4,11 +4,11 @@
   "description": "A PDF viewer library designed for citations",
   "author": "Ozair Hassan",
   "license": "MIT",
-  "module": "dist/index.js",
+  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
+      "import": "./dist/index.mjs",
       "types": "./dist/index.d.ts"
     }
   },
